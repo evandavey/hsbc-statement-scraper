@@ -293,7 +293,107 @@ var months = {"Jan":"01", "Feb":"02", "Mar":"03", "Apr": "04", "May": "05", "Jun
 var csv = "";
 var entries = []; 
 var statementYear = "????";
+var links = [];
+var item = 0; //entry counter
 
+function createCSV() {
+	
+	// Serialize the entries array
+	
+	//header 
+	csv+='date,value,description,memo\n'
+	
+	
+	for (i=0;i<entries.length;i++) {
+	
+		
+		var currentRow = entries[i];
+		if (!currentRow.ignore) {
+				csv += currentRow.date + "," + currentRow.value + "," + currentRow.description + "," + currentRow.memo +"\n"; 
+		}
+		
+	}
+	
+
+	//
+	// Insert the copy to clipboard feature.
+	//
+	console.log(csv);
+	
+	// Initialize flash embed
+	initializeFlashEmbed();
+	$("#statementDate").prepend("&nbsp;");
+	$("#statementDate").append(" <span id='clippy'></span>");
+	$("#clippy").flashembed({src:"http://dl.dropbox.com/u/5269427/clippy.swf", height:"14px", width:"400px"}, {text:escape(csv)});
+	
+}
+
+function processLinks() {
+	
+
+	if (links.length==0) {
+		
+			console.log('Done')
+			createCSV();
+	} else {
+		
+		curr=links.pop();
+
+		console.log(curr.href)
+		w=window.open(curr.href,"_blank","w");
+		
+		function load() {
+
+				this.opener.notify(this.document,curr.item);
+				this.close();
+
+		}
+		
+		if (w) {
+	        	w.addEventListener("load", load, false); 
+    	    
+		}
+	}
+
+
+}
+
+window.notify = function (doc,i) {
+		
+		var html=$("html",doc);
+		
+		var body=$("body",$(html));
+		
+		//console.log('Window for item ' + i + " finished loading")
+		//alert(body.html())
+		
+		var table = $("table",$(body))[0];
+		
+		var rows = $("tbody tr", table);
+		
+		var rowCount = 0;
+		rows.each(function(){
+			rowCount++;
+			
+			var cellCount = 0;
+			var cells = $("td", $(this));		
+			cells.each(function(){
+				if (rowCount==6) {
+					
+					memo=$("p", $(this)).attr('innerHTML').trim();
+					
+				}
+			});
+		});
+		
+		memo=memo.replace('<br>'," -").replace('/<br\s*[\/]?>/gi','');
+		memo=memo.replace(/\s{2,}/g, ' ');
+		entries[i].memo=memo;
+		
+		
+		processLinks();
+        //alert(title + ' run from opened window ' + i);
+    };
 
 //
 // Thanks to http://www.squidoo.com/load-jQuery-dynamically
@@ -416,7 +516,15 @@ load.tryReady = function(time_elapsed) {
 							rowData.ignore = true;
 							break;
 						}
+					} else { 
+					    var link="https://www.hsbc.co.uk"+$("a", this).attr("href");
+					    linki={}
+						linki.href=link;
+						linki.item=entries.length;
+						links.push(linki)
+					    //console.log("Links:" + links)
 					}
+					
 					description = description.trim();
 					description = description.replace(",", " - ");
 					description = description.replace("&amp;", "&");
@@ -460,23 +568,9 @@ load.tryReady = function(time_elapsed) {
 		
 	});
 	
-	// Serialize the entries array
-	for (i = 0; i < entries.length; i++) {
-		var currentRow = entries[i];
-		if (!currentRow.ignore) {
-			csv += currentRow.date + "," + currentRow.value + "," + currentRow.description + "\n"; 
-		}
-	}
+	processLinks();
 	
-	//alert(csv);
-	
-	//
-	// Insert the copy to clipboard feature.
-	//
-	
-	$("#statementDate").prepend("&nbsp;");
-	$("#statementDate").append(" <span id='clippy'></span>");
-	$("#clippy").flashembed({src:"http://dl.dropbox.com/u/5269427/clippy.swf", height:"14px", width:"400px"}, {text:escape(csv)});
+
 	
   }
 

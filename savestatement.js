@@ -1,3 +1,15 @@
+// savestatements.js
+// function to parse HSBC previous bank statements from online banking into csv
+// popups need to be enabled in your browser
+// call from a bookmarklet using:
+// javascript:function loadScript(scriptURL) { var scriptElem = document.createElement('script'); scriptElem.setAttribute('language', 'JavaScript'); scriptElem.setAttribute('src', scriptURL); document.body.appendChild(scriptElem);} loadScript('http://dl.dropbox.com/u/5269427/savestatement.js');)
+// 
+//
+// History:
+// v0.2 - Evan Davey, evan.davey@cochranedavey.com - adds extra detail processing
+// v0.1 - http://aralbalkan.com/3744 - original version, basic statement processing
+
+
 function initializeFlashEmbed() {
 
 	var IE = document.all,
@@ -293,9 +305,11 @@ var months = {"Jan":"01", "Feb":"02", "Mar":"03", "Apr": "04", "May": "05", "Jun
 var csv = "";
 var entries = []; 
 var statementYear = "????";
-var links = [];
-var item = 0; //entry counter
 
+
+var links = []; //stores extra detail links
+
+//function to output a CSV and embed a clipboard
 function createCSV() {
 	
 	// Serialize the entries array
@@ -328,28 +342,34 @@ function createCSV() {
 	
 }
 
+//function to process statement entry links for extra detail
 function processLinks() {
 	
-
+	//no more links, generate the CSV / Clipboard
 	if (links.length==0) {
 		
 			console.log('Done')
 			createCSV();
 	} else {
 		
-		curr=links.pop();
+		curr=links.pop(); //pop next link from stack
 
-		console.log(curr.href)
-		w=window.open(curr.href,"_blank","w");
+		//console.log(curr.href)
+		w=window.open(curr.href,"_blank","w"); //open link in popup
 		
+		//callback function for when popup loads
 		function load() {
-
-				this.opener.notify(this.document,curr.item);
+                //call process_extra function to read data from the popup
+                //needs to be passed the entry id 
+                this.opener.process_extra(this.document,curr.item);
+				
+				//then close this popup
 				this.close();
 
 		}
 		
 		if (w) {
+		        //add the load callback to the popup
 	        	w.addEventListener("load", load, false); 
     	    
 		}
@@ -358,7 +378,8 @@ function processLinks() {
 
 }
 
-window.notify = function (doc,i) {
+//function to read the extra detail popup
+window.process_extra = function (doc,i) {
 		
 		var html=$("html",doc);
 		
@@ -390,7 +411,7 @@ window.notify = function (doc,i) {
 		memo=memo.replace(/\s{2,}/g, ' ');
 		entries[i].memo=memo;
 		
-		
+		//continue to process links
 		processLinks();
         //alert(title + ' run from opened window ' + i);
     };
@@ -517,10 +538,13 @@ load.tryReady = function(time_elapsed) {
 							break;
 						}
 					} else { 
+					    
+					    //store the link data for later processing
+					    
 					    var link="https://www.hsbc.co.uk"+$("a", this).attr("href");
 					    linki={}
 						linki.href=link;
-						linki.item=entries.length;
+						linki.item=entries.length; //link length does not equal entry length
 						links.push(linki)
 					    //console.log("Links:" + links)
 					}
@@ -568,6 +592,7 @@ load.tryReady = function(time_elapsed) {
 		
 	});
 	
+	//done processing main data, now process extra data in links
 	processLinks();
 	
 

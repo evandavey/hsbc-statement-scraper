@@ -588,6 +588,7 @@ load.tryReady = function(time_elapsed) {
 		}
 		
 		// Add the row data to the entries array
+	    rowData.memo = ''; //set memo to be empty by default
 		entries.push(rowData);
 		
 	});

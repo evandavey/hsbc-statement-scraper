@@ -315,7 +315,7 @@ function createCSV() {
 	// Serialize the entries array
 	
 	//header 
-	csv+='date,value,description,memo\n'
+	csv+='date,value,payee,memo\n'
 	
 	
 	for (i=0;i<entries.length;i++) {

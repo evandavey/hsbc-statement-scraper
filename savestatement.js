@@ -421,7 +421,7 @@ window.process_extra = function (doc,i) {
 //
 
 load = function() {
-  load.getScript("https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js");
+  load.getScript("https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js");
   load.tryReady(0); // We will write this function later. It's responsible for waiting until jQuery loads before using it.
 }
 

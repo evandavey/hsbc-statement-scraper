@@ -6,7 +6,7 @@ Javascript to scrape hsbc online bank statements
 Installation
 ============
 
-* Create a Bookmarklet with the following:
+* Create a bookmark in your browser with the following code as the url:
 
     javascript:function loadScript(scriptURL) { var scriptElem = document.createElement('script'); scriptElem.setAttribute('language', 'JavaScript'); scriptElem.setAttribute('src', scriptURL); document.body.appendChild(scriptElem);} loadScript('https://raw.github.com/evandavey/hsbc-statement-scraper/master/savestatement.js');)
 
